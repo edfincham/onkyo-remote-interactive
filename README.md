@@ -54,3 +54,13 @@ It's not hard:
 conn = OnkyoRI(pin=8)
 conn.send(0x4)
 ```
+
+# Docker Image
+
+The `Dockerfile` defines a container which runs a simple Python [FastAPI](https://fastapi.tiangolo.com/) app which acts as an async queue for executing commands sent to the Onkyo RI port. The app expects `POST` requests with the following structure:
+
+```shell
+curl -X POST http://localhost:8080/message \
+    -H "Content-Type: application/json" \
+    -d '{"action": "0xD6"}'
+```
