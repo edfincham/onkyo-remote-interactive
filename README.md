@@ -1,4 +1,4 @@
-# Onkyo Remote Interactive (Python interface)
+# Onkyo Remote Interactive (Raspberry Pi Python interface)
 
 It's possible to control Onkyo devices via the Remote Interactive (RI) port. This port is normally used for direct communication between two Onkyo devices, but it can be repurposed for a more custom interface.
 
@@ -55,12 +55,24 @@ conn = OnkyoRI(pin=8)
 conn.send(0x4)
 ```
 
-# Docker Image
+# Raspberry Pi Docker Image
 
 The `Dockerfile` defines a container which runs a simple Python [FastAPI](https://fastapi.tiangolo.com/) app which acts as an async queue for executing commands sent to the Onkyo RI port. The app expects `POST` requests with the following structure:
 
 ```shell
 curl -X POST http://localhost:8080/message \
     -H "Content-Type: application/json" \
-    -d '{"action": "0xD6"}'
+    -d '{"action": "0xD9"}'
 ```
+
+## K3s
+If the Raspberry Pi running the container is part of a K3s cluster, the manifest in `k3s` can applied to deploy the container with all the required environment variables and volume mounts.
+
+However, to ensure the pod is deployed to the correct node in the cluster, a label and a taint should be added first. Assuming the node connected to the Onkyo device is called `rpi-x`, run:
+```shell
+kubectl label node rpi-x device=hifi
+kubectl taint nodes rpi-x device=hifi:NoSchedule
+kubectl apply -f k3s/onkyo.yaml
+```
+
+Unfortunately, the manifest does specify `privileged: true`. There may be a way to avoid this via volume mounts, but I haven't been able to get that working. 

@@ -1,0 +1,45 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: onkyo
+---
+apiVersion: v1
+kind: Pod
+metadata:
+  name: onkyo-handler
+  namespace: onkyo
+  labels:
+    app: onkyo
+spec:
+  containers:
+  - name: onkyo
+    image: edfincham/onkyo-rpi:latest
+    securityContext:
+      privileged: true
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: device
+            operator: In
+            values:
+            - hifi
+  tolerations:
+  - key: device
+    operator: Equal
+    value: hifi
+    effect: NoSchedule
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: onkyo-handler-svc
+  namespace: onkyo
+spec:
+  selector:
+    app: onkyo
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
